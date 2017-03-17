@@ -1,13 +1,10 @@
 # -*-coding:utf-8-*-
 from selenium import webdriver
-import time
-
 dr = webdriver.Chrome()
 
-time.sleep(5)
-
-print 'Browser will be closed'
-
-dr.quit()
-
-print 'Browser is close'
+# import  os
+# chromedriver = "/usr/local/Cellar/chromedriver/2.28/bin/chromedriver"
+# os.environ["webdriver.chrome.driver"] = chromedriver
+# driver = webdriver.Chrome(chromedriver)
+# driver.get("http://stackoverflow.com")
+# driver.quit()
