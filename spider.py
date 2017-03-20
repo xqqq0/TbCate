@@ -54,14 +54,39 @@ def search():
         print("超时")
         return search()
 
+def get_next_page(page_number):
+    try:
+    # 拿到输入框 和确定 按钮，然后输入页码
+        input = wait.until(
+            EC.presence_of_element_located((By.CSS_SELECTOR,"#mainsrp-pager > div > div > div > div.form > input"))
+        )
+
+        submit = wait.until(
+            EC.element_to_be_clickable((By.CSS_SELECTOR, "#mainsrp-pager > div > div > div > div.form > span.btn.J_Submit"))
+        )
+        input.clear()
+        input.send_keys(page_number)
+        submit.click()
+
+        # 翻页后确定当前面是否加载完，主要看页码当时是否为高亮状态
+        text = wait.until(
+            EC.text_to_be_present_in_element((By.CSS_SELECTOR,"#mainsrp-pager > div > div > div > ul > li.item.active > span"), str(page_number))
+        )
+    except TimeoutException:
+        print("get_next_page超时")
+        get_next_page(page_number)
+
 def main():
     totoal = search()
     pattern = re.compile(r"(\d+)")
     match = re.search(pattern, totoal)
-    if match:
-        print  match.group(1)
-    else:
-        print("页面匹配失败")
+    # 遍历获取所有的页面
+    for i in range(2,int(match.group(1)) + 1):
+        get_next_page(i)
+    # if match:
+    #     print  match.group(1)
+    # else:
+    #     print("页面匹配失败")
 
 if __name__ == "__main__":
     main()
