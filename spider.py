@@ -46,9 +46,12 @@ def search():
         )
 
         # 调用selenium的API来给搜索框输入内容，然后按钮追加点击方法
-        keyword = "美食".decode(encoding="utf-8")
+        '''
+        UnicodeDecodeError: 'utf8' codec can't decode byte 0xe7
+        in position 0: unexpected end of data
+        '''
         # send_keys添加参数
-        input.send_keys(keyword)
+        input.send_keys(KEYWORD)
         # 添加点击方法
         submit.click()
 
@@ -127,15 +130,19 @@ def save_to_mongo(result):
     except Exception:
         print("存储失败",result)
 def main():
-    totoal = search()
-    pattern = re.compile(r"(\d+)")
-    match = re.search(pattern, totoal)
-    # 遍历获取所有的页面
-    for i in range(2,int(match.group(1)) + 1):
-        get_next_page(i)
-    # 数据获取结束以后关闭浏览器
-    # 如果用phantomJS。下面这句要注释不然报错
-    #     browser.close()
+    try:
+        totoal = search()
+        pattern = re.compile(r"(\d+)")
+        match = re.search(pattern, totoal)
+        # 遍历获取所有的页面
+        for i in range(2,int(match.group(1)) + 1):
+            get_next_page(i)
+        # 数据获取结束以后关闭浏览器
+        # 如果用phantomJS。下面这句要注释不然报错
+    except Exception:
+        print("出错了")
+    finally:
+        browser.close()
 
 if __name__ == "__main__":
     main()
