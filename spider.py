@@ -1,15 +1,21 @@
 # -*-coding:utf-8-*-
 import re
+from pymongo import MongoClient
 from selenium import webdriver
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from pyquery import  PyQuery as pq
-
+from config import *
 import sys
 reload(sys)
 sys.setdefaultencoding('utf-8')
+
+# 创建数据库链接
+client = MongoClient(MONGO_URL)
+# 创建数据库
+db = client[MONGO_DB]
 
 browser = webdriver.Chrome()
 wait = WebDriverWait(browser, 10)
@@ -102,18 +108,28 @@ def get_product():
             "price": item.find(".price").text(),
             "deal": item.find(".deal-cnt").text()[:-3],
             "title": item.find(".title").text(),
-            "shop": item.find(".shop").text().encode("utf-8"),
+            "shop": item.find(".shop").text(),
             "location": item.find(".location").text()
         }
-        print(product)
+        save_to_mongo(product)
 
+'''
+4.存储数据
+'''
+def save_to_mongo(result):
+    try:
+        if db[MONGO_TAB].insert(result):
+            print("正在存储到mongDB")
+    except Exception:
+        print("存储失败",result)
 def main():
     totoal = search()
     pattern = re.compile(r"(\d+)")
     match = re.search(pattern, totoal)
+
     # 遍历获取所有的页面
-    for i in range(2,int(match.group(1)) + 1):
-        get_next_page(i)
+    # for i in range(2,int(match.group(1)) + 1):
+    #     get_next_page(i)
 
 if __name__ == "__main__":
     main()
