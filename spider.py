@@ -5,6 +5,7 @@ from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from pyquery import  PyQuery as pq
 
 import sys
 reload(sys)
@@ -12,10 +13,10 @@ sys.setdefaultencoding('utf-8')
 
 browser = webdriver.Chrome()
 wait = WebDriverWait(browser, 10)
+
 '''
 1.设置页面搜索方法
 '''
-
 
 def search():
     browser.get("https://s.taobao.com")
@@ -47,13 +48,15 @@ def search():
         total = wait.until(
             EC.presence_of_element_located((By.CSS_SELECTOR, "#mainsrp-pager > div > div > div > div.total"))
         )
-
+        get_product()
         return total.text
-
     except TimeoutException:
         print("超时")
         return search()
 
+'''
+2.设置自动翻页
+'''
 def get_next_page(page_number):
     try:
     # 拿到输入框 和确定 按钮，然后输入页码
@@ -72,9 +75,37 @@ def get_next_page(page_number):
         text = wait.until(
             EC.text_to_be_present_in_element((By.CSS_SELECTOR,"#mainsrp-pager > div > div > div > ul > li.item.active > span"), str(page_number))
         )
+        get_product()
     except TimeoutException:
         print("get_next_page超时")
         get_next_page(page_number)
+
+'''
+3.解析页面，获取美食信息
+'''
+def get_product():
+    # 页面记载结束：主要是看商品信息的大节点是不是加载完了
+    wait.until(
+        EC.presence_of_element_located((By.CSS_SELECTOR, "#mainsrp-itemlist .items .item"))
+    )
+    # 获取页面内容
+    html = browser.page_source
+    # 通过PyQuery解析页面
+    doc = pq(html)
+    # 根据节点获取美食的集合
+    items = doc("#mainsrp-itemlist .items .item").items()
+    # 遍历 获取各值
+    for item in items:
+        product = {
+            # 获取img标签下的src属性
+            "image": item.find(".pic .img").attr("src"),
+            "price": item.find(".price").text(),
+            "deal": item.find(".deal-cnt").text()[:-3],
+            "title": item.find(".title").text(),
+            "shop": item.find(".shop").text().encode("utf-8"),
+            "location": item.find(".location").text()
+        }
+        print(product)
 
 def main():
     totoal = search()
@@ -83,10 +114,6 @@ def main():
     # 遍历获取所有的页面
     for i in range(2,int(match.group(1)) + 1):
         get_next_page(i)
-    # if match:
-    #     print  match.group(1)
-    # else:
-    #     print("页面匹配失败")
 
 if __name__ == "__main__":
     main()
