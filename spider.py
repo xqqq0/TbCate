@@ -17,7 +17,8 @@ client = MongoClient(MONGO_URL)
 # 创建数据库
 db = client[MONGO_DB]
 
-browser = webdriver.Chrome()
+browser = webdriver.PhantomJS(service_args=SEARVICE_ARGS)
+browser.set_window_size(1400,800)
 wait = WebDriverWait(browser, 10)
 
 '''
@@ -25,6 +26,7 @@ wait = WebDriverWait(browser, 10)
 '''
 
 def search():
+    print("正在搜索")
     browser.get("https://s.taobao.com")
     # selenium处理页面等待的方法
     # 设置一下需要监听的元素，可以通过id或者能唯一确定元素的属性
@@ -64,6 +66,7 @@ def search():
 2.设置自动翻页
 '''
 def get_next_page(page_number):
+    print(u"正在翻页")
     try:
     # 拿到输入框 和确定 按钮，然后输入页码
         input = wait.until(
@@ -90,6 +93,7 @@ def get_next_page(page_number):
 3.解析页面，获取美食信息
 '''
 def get_product():
+    print("正在获取产品")
     # 页面记载结束：主要是看商品信息的大节点是不是加载完了
     wait.until(
         EC.presence_of_element_located((By.CSS_SELECTOR, "#mainsrp-itemlist .items .item"))
@@ -126,10 +130,12 @@ def main():
     totoal = search()
     pattern = re.compile(r"(\d+)")
     match = re.search(pattern, totoal)
-
     # 遍历获取所有的页面
-    # for i in range(2,int(match.group(1)) + 1):
-    #     get_next_page(i)
+    for i in range(2,int(match.group(1)) + 1):
+        get_next_page(i)
+    # 数据获取结束以后关闭浏览器
+    # 如果用phantomJS。下面这句要注释不然报错
+    #     browser.close()
 
 if __name__ == "__main__":
     main()
