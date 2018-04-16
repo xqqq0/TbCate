@@ -17,7 +17,7 @@
 * 安装PyQuery
   ` sudo easy_install pyquery`
 * 安装phantomjs
-` brew install phantomjs`
+` brew install phantomjs` 
 
 # 利用 selenium模拟淘宝操作
 > 使用selenium的大致思路根据CSS选择器或者id之类的定位到具体的控件，然后给控件实现赋值或者点击等操作。
